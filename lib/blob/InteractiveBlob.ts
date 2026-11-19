@@ -3,13 +3,33 @@
 // moves; when the cursor rests it holds still and blinks a little more.
 import { BlobAnimator, R, VIEW } from './BlobAnimator';
 import { POSES, type Pose, type PoseName } from './poses';
+import type { IntentId } from '../intent/intents';
 
-export type Reaction = 'heard';
+/** 'heard' = a phrase arrived but its meaning isn't known (intent model still loading). */
+export type Reaction = 'heard' | IntentId;
 
-// short pose sequences played in response to events: [pose, ms, overrides?]
+// Short pose sequences played in response to what you said: [pose, ms, overrides?].
+// `follow: 0` keeps the cursor from steering the gaze where the look matters.
 type Step = [PoseName, number, Partial<Pose>?];
 const REACTIONS: Record<Reaction, Step[]> = {
-  heard:    [['notify', 1100], ['idle', 200, { badge: 0 }]],        // a voice phrase was transcribed
+  heard:    [['notify', 1100], ['idle', 200, { badge: 0 }]],
+  story:    [['notify', 1100], ['idle', 200, { badge: 0 }]],
+  // happy squint with a little hop
+  greeting: [['happy', 260, { y: -0.14, follow: 0 }], ['happy', 800, { follow: 0 }]],
+  // thinks with the dots, then big curious eyes
+  question: [['thinking', 700], ['curious', 1300, { follow: 0.3 }]],
+  // "!" then a bouncy smile inside the rainbow orbits
+  excited:  [['exclaim', 520], ['happy', 300, { y: -0.12, orbits: 0.6, follow: 0 }], ['orbitSphere', 900, { gazeYaw: 0, gazePitch: 0.2, follow: 0 }]],
+  // long, warm squint
+  thanks:   [['happy', 1400, { eyeTilt: 18, follow: 0 }]],
+  // droops into the egg shape, eyes low and half shut
+  sad:      [['eggSquint', 1800, { gazeYaw: 0, gazePitch: -0.45, y: 0.08, follow: 0 }]],
+  // squints, thinks, glances around
+  confused: [['squint', 600], ['thinking', 700], ['lookLeft', 450, { follow: 0 }], ['lookCenter', 350, { follow: 0 }]],
+  // waves off by shrinking to a dot, then pops back
+  goodbye:  [['happy', 450, { follow: 0 }], ['dot', 1000], ['small', 300]],
+  // spins up into the triangle with orbits, like it's making something
+  create:   [['triangle', 420], ['triangleSpin', 550, { rot: 60 }], ['triangleSpin', 550, { rot: 150 }], ['orbitSphere', 600, { rot: 180 }]],
 };
 
 
