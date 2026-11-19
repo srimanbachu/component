@@ -202,7 +202,7 @@ html, body {
 
 /* ---------- messages ---------- */
 .messages-wrap {
-  --blur-h: clamp(36px, 7vh, 72px);   /* height of the blurred band at the top */
+  --blur-h: clamp(56px, 13vh, 130px);  /* height of the blurred band at the top */
   position: relative;
   width: min(640px, 100%);
   flex: 1;
@@ -227,12 +227,14 @@ html, body {
 /* new messages stack from the bottom, right under the character's status */
 .messages > :first-child { margin-top: auto; }
 
-/* Progressive blur: stacked backdrop-filter layers, each stronger and
-   masked to a higher slice of the band, so text gets blurrier the further
-   it scrolls up. */
+/* Progressive blur, dispersed: seven backdrop-filter layers with wide,
+   overlapping ramps (no visible steps), side edges feathered so the band
+   has no box outline, and the very top dissolving into the page colour. */
 .messages-blur {
   position: absolute;
-  inset: 0 0 auto 0;
+  top: 0;
+  left: -48px;
+  right: -48px;
   height: var(--blur-h);
   pointer-events: none;
   z-index: 1;
@@ -240,17 +242,28 @@ html, body {
 .messages-blur span {
   position: absolute;
   inset: 0;
-}
-.messages-blur span:nth-child(1) { --b: 0.5px; --from: 0%;  --to: 30%; }
-.messages-blur span:nth-child(2) { --b: 1px;   --from: 15%; --to: 45%; }
-.messages-blur span:nth-child(3) { --b: 2px;   --from: 30%; --to: 60%; }
-.messages-blur span:nth-child(4) { --b: 4px;   --from: 45%; --to: 80%; }
-.messages-blur span:nth-child(5) { --b: 8px;   --from: 60%; --to: 100%; }
-.messages-blur span {
   -webkit-backdrop-filter: blur(var(--b));
   backdrop-filter: blur(var(--b));
-  -webkit-mask-image: linear-gradient(to top, transparent var(--from), #000 var(--to));
-  mask-image: linear-gradient(to top, transparent var(--from), #000 var(--to));
+  /* vertical ramp × horizontal feather */
+  -webkit-mask-image:
+    linear-gradient(to top, transparent var(--from), #000 var(--to)),
+    linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to top, transparent var(--from), #000 var(--to)),
+    linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
+  mask-composite: intersect;
+}
+.messages-blur span:nth-child(1) { --b: 0.6px; --from: 0%;  --to: 35%; }
+.messages-blur span:nth-child(2) { --b: 1.2px; --from: 10%; --to: 45%; }
+.messages-blur span:nth-child(3) { --b: 2.2px; --from: 22%; --to: 58%; }
+.messages-blur span:nth-child(4) { --b: 3.5px; --from: 34%; --to: 70%; }
+.messages-blur span:nth-child(5) { --b: 5.5px; --from: 46%; --to: 82%; }
+.messages-blur span:nth-child(6) { --b: 8px;   --from: 58%; --to: 92%; }
+/* last layer also tints toward the background so the top edge melts away */
+.messages-blur span:nth-child(7) {
+  --b: 12px; --from: 70%; --to: 100%;
+  background: linear-gradient(to top, transparent 70%, rgba(250, 250, 250, 0.85) 100%);
 }
 
 .message {

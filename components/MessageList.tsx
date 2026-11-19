@@ -28,7 +28,7 @@ export default function MessageList({ messages, interim }: Props) {
       </div>
       {/* progressive blur: text scrolling up melts into a blur instead of fading to white */}
       <div className="messages-blur" aria-hidden="true">
-        <span /><span /><span /><span /><span />
+        <span /><span /><span /><span /><span /><span /><span />
       </div>
     </div>
   );
