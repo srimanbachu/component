@@ -79,8 +79,14 @@
     bodyTarget = { x: clamp(dx / (reach * 3)) * BODY_SHIFT, y: clamp(dy / (reach * 3)) * BODY_SHIFT };
   }
   window.addEventListener('pointermove', e => onPointer(e.clientX, e.clientY), { passive: true });
-  document.addEventListener('pointerleave', () => { lookTarget = { x: 0, y: 0 }; });
-  window.addEventListener('blur', () => { lookTarget = { x: 0, y: 0 }; });
+  // cursor left the page: settle back to centre (eyes and body)
+  function recentre() {
+    lookTarget = { x: 0, y: 0 };
+    bodyTarget = { x: 0, y: 0 };
+    lastPointer = null;
+  }
+  document.documentElement.addEventListener('mouseleave', recentre);
+  window.addEventListener('blur', recentre);
 
   /* ---------- blink (Eyes=Closed) ---------- */
   const BLINK_GAP = [2200, 5400];      // ms between blinks while the cursor moves
