@@ -161,6 +161,42 @@ html, body {
   height: 100%;
   overflow: visible;
 }
+/* status label on top of the character; a pulsing dot while listening */
+.blob-status {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  transition: color 0.3s;
+}
+.blob-status.on { color: var(--fg); }
+.blob-status.on::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e5484d;
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.75); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob-status.on::before { animation: none; }
+}
+
 /* hit area covers just the body (radius 150 of a 600 viewBox = 25%) */
 .blob-wrap .orb-hit { inset: 25%; }
 

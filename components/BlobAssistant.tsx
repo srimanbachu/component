@@ -131,9 +131,9 @@ export default function BlobAssistant() {
           onContextMenu={ev => ev.preventDefault()}
           onClick={ev => ev.preventDefault()}
         />
+        {/* status sits on top of the character instead of between it and the text */}
+        <p className={`blob-status${listening ? ' on' : ''}`} role="status">{status.text}</p>
       </MorphBlob>
-
-      <p className={`status${status.on ? ' on' : ''}`}>{status.text}</p>
 
       <MessageList messages={messages} interim={interim} />
 
