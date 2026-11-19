@@ -114,6 +114,12 @@
       base.dy -= level * 9;
       base.eh += level * 22;
     }
+    // squash & stretch along the cursor's motion (cartoon follow-through)
+    const sx = Math.min(1, Math.abs(cursorVel.x) / 1800);
+    const sy = Math.min(1, Math.abs(cursorVel.y) / 1800);
+    base.rx += (sx - sy) * 16;
+    base.ry += (sy - sx) * 16;
+
     // lean into the cursor's motion; fades to upright once the cursor stops
     const tilt = Math.max(-1, Math.min(1, cursorVel.x / 1400)) * MAX_TILT;
     return { ...base, lx: lookTarget.x, ly: lookTarget.y, bx: bodyTarget.x, by: bodyTarget.y, tilt };
