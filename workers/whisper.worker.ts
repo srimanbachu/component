@@ -1,13 +1,13 @@
 /// <reference lib="webworker" />
 // Runs Whisper speech-to-text locally in the browser (Transformers.js).
 // Lives in a Web Worker so model inference never blocks the bird animation.
-import { pipeline, env, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+import { pipeline as loadPipeline, env, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { WorkerRequest, WorkerResponse } from '@/lib/voice/messages';
 
 env.allowLocalModels = false; // always fetch from the Hugging Face hub (cached by the browser after first load)
 
 const MODEL = 'onnx-community/whisper-base';
-const LANGUAGE: string | null = 'english'; // set to null for auto-detect, or e.g. 'hindi', 'telugu'
+const LANGUAGE: string | undefined = 'english'; // undefined = auto-detect, or e.g. 'hindi', 'telugu'
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 const post = (msg: WorkerResponse, transfer: Transferable[] = []) => ctx.postMessage(msg, transfer);
@@ -39,6 +39,14 @@ function progressReporter() {
 
 type LoadConfig = { device: 'webgpu' | 'wasm'; dtype: string | Record<string, string> };
 
+// pipeline()'s overloads build a union too large for TypeScript to check here,
+// so call it through a narrow signature for the one task we use
+const pipeline = loadPipeline as unknown as (
+  task: 'automatic-speech-recognition',
+  model: string,
+  options: { device: LoadConfig['device']; dtype: LoadConfig['dtype']; progress_callback: (p: Progress) => void },
+) => Promise<AutomaticSpeechRecognitionPipeline>;
+
 async function load() {
   const gpu = await hasWebGPU();
   const configs: LoadConfig[] = gpu
@@ -49,12 +57,11 @@ async function load() {
   let lastErr: unknown;
   for (const cfg of configs) {
     try {
-      transcriber = (await pipeline('automatic-speech-recognition', MODEL, {
+      transcriber = await pipeline('automatic-speech-recognition', MODEL, {
         device: cfg.device,
-        // dtype accepts a per-module map; the library's union type is narrower than its runtime
-        dtype: cfg.dtype as never,
+        dtype: cfg.dtype,
         progress_callback: progressReporter(),
-      })) as AutomaticSpeechRecognitionPipeline;
+      });
       // warm-up pass compiles kernels so the first real phrase is fast
       await transcriber(new Float32Array(16000), { language: LANGUAGE, task: 'transcribe' });
       post({ type: 'ready', device: cfg.device });
