@@ -247,7 +247,9 @@ export class BlobAnimator {
       eye.setAttribute('height', h.toFixed(1));
       eye.setAttribute('rx', (Math.min(w, h) / 2).toFixed(1));
       eye.setAttribute('transform', `rotate(${(p.angle + c.eyeTilt).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)})`);
-      eye.setAttribute('opacity', Math.max(0, Math.min(1, c.eyeOpacity * p.visible)).toFixed(2));
+      // eyes never show on tiny shapes (dots, the "!" dot, the pen nib), even mid-morph
+      const sizeGate = Math.max(0, Math.min(1, (bodyScale - 0.45) / 0.2));
+      eye.setAttribute('opacity', Math.max(0, Math.min(1, c.eyeOpacity * p.visible * sizeGate)).toFixed(2));
     });
   }
 
