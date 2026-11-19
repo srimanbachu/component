@@ -2,7 +2,9 @@
 
 import { useLayoutEffect, useRef } from 'react';
 
-export type Message = { id: number; text: string; via: 'typed' | 'voice' };
+import type { IntentResult } from '@/lib/intent/intents';
+
+export type Message = { id: number; text: string; via: 'typed' | 'voice'; intent?: IntentResult };
 
 type Props = { messages: Message[]; interim: string };
 
@@ -18,7 +20,10 @@ export default function MessageList({ messages, interim }: Props) {
     <div className="messages-wrap">
       <div ref={ref} className="messages" aria-live="polite">
         {messages.map(m => (
-          <p key={m.id} className={`message ${m.via}`}>{m.text}</p>
+          <p key={m.id} className={`message ${m.via}`}>
+            {m.text}
+            {m.intent && <span className="intent" title={`${Math.round(m.intent.score * 100)}% confident`}>{m.intent.caption}</span>}
+          </p>
         ))}
         {interim && <p className="message voice interim">{interim}</p>}
       </div>

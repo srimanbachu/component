@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import MorphBlob, { type MorphBlobHandle } from './MorphBlob';
 import MessageList, { type Message } from './MessageList';
 import { VoiceEngine, type Status } from '@/lib/voice/VoiceEngine';
+import { IntentClassifier } from '@/lib/intent/IntentClassifier';
 
 const HOLD_MS = 350; // pressing the blob longer than this = push-to-talk
 
@@ -18,25 +19,31 @@ export default function BlobAssistant() {
   const [listening, setListening] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const addMessage = useCallback((text: string, via: Message['via']) => {
-    setMessages(m => [...m, { id: nextId.current++, text, via }]);
-  }, []);
-
-  /* ---------- voice engine ---------- */
+  /* ---------- speech + word understanding ---------- */
   useEffect(() => {
+    const intents = new IntentClassifier();
+
+    // each phrase: show it, work out what it means, then let the blob react
+    const onPhrase = async (text: string) => {
+      const id = nextId.current++;
+      setMessages(m => [...m, { id, text, via: 'voice' }]);
+      const intent = await intents.classify(text);
+      if (intent) setMessages(m => m.map(msg => (msg.id === id ? { ...msg, intent } : msg)));
+      blob.current?.react(intent?.id ?? 'heard');
+    };
+
     const e = new VoiceEngine({
       onStatus: setStatus,
       onTranscript: t => setInterim(t.interim),
       onListening: setListening,
-      onPhrase: text => {
-        addMessage(text, 'voice');
-        blob.current?.react('heard');
-      },
+      onPhrase,
+      // fetch the word model only after Whisper, so the two downloads don't compete
+      onReady: () => intents.load(),
     }, { idleMessage: 'Tap or hold the character to speak' });
     engine.current = e;
     e.load();
-    return () => { e.dispose(); engine.current = null; };
-  }, [addMessage]);
+    return () => { e.dispose(); intents.dispose(); engine.current = null; };
+  }, []);
 
   // smoothed voice level -> blob, every frame
   useEffect(() => {

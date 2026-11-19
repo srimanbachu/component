@@ -228,6 +228,17 @@ html, body {
   animation: message-in 0.35s cubic-bezier(.2, .8, .2, 1);
 }
 .message.interim { color: var(--muted); animation: none; }
+/* what the character understood, shown quietly after each phrase */
+.message .intent {
+  margin-left: 0.6em;
+  font-size: 0.62em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  vertical-align: 0.15em;
+  white-space: nowrap;
+  animation: message-in 0.35s cubic-bezier(.2, .8, .2, 1);
+}
 @keyframes message-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
