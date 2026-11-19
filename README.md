@@ -26,7 +26,7 @@ The first load downloads the speech model (about 200 MB). The browser caches it,
 | Hold the bird or Space | Push to talk: records while held |
 | Move the cursor | Eyes track it, the body drifts and leans toward it |
 | Stop moving the cursor | The bird holds still and blinks a little more often |
-| Speak | The bird hops and stretches with your voice. Grey preview text turns white when the phrase is final |
+| Speak | The bird hops and stretches with your voice. Grey preview text turns solid when the phrase is final |
 
 ## Project structure
 
