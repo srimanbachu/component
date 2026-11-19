@@ -105,7 +105,8 @@ export class InteractiveBlob extends BlobAnimator {
     const dx = x - cx, dy = y - cy;
     const reach = r.width * 0.45;
     // gaze and drift only change on movement, so a resting cursor = a still blob
-    this.cursorGaze = { yaw: clamp1(dx / reach) * 1.0, pitch: clamp1(-dy / reach) * 0.85 };
+    // capped so the eyes stay on the visible face instead of squashing at the rim
+    this.cursorGaze = { yaw: clamp1(dx / reach) * 0.72, pitch: clamp1(-dy / reach) * 0.62 };
     const travel = DRIFT * this.motion();
     this.driftTarget = { x: clamp1(dx / (reach * 3)) * travel, y: clamp1(dy / (reach * 3)) * travel };
     this.hovering = Math.hypot(dx, dy) < R * px * 1.1 * Math.max(this.cur.sx, 0.3);
