@@ -22,6 +22,7 @@ const SPRING: Partial<Record<ScalarKey, [number, number]>> = {
 };
 const DEFAULT_SPRING: [number, number] = [150, 17];
 const SHAPE_SPRING: [number, number] = [130, 15];
+const MAX_SUBSTEP = 1 / 240;          // seconds per integration step
 
 function el<K extends keyof SVGElementTagNameMap>(name: K, attrs: Record<string, string | number> = {}, parent?: Element) {
   const node = document.createElementNS(SVG_NS, name);
@@ -128,18 +129,32 @@ export class BlobAnimator {
   };
 
   private step(target: Pose, dt: number) {
-    for (const k of SCALAR_KEYS) {
-      const [stiff, damp] = SPRING[k] ?? DEFAULT_SPRING;
-      const a = stiff * (target[k] - this.cur[k]) - damp * this.vel[k];
-      this.vel[k] += a * dt;
-      this.cur[k] += this.vel[k] * dt;
-    }
+    // Stiff springs blow up if integrated in one big step (a 33 ms frame with
+    // stiffness 900 / damping 60 diverged and made the eyes flicker forever),
+    // so always advance in small fixed sub-steps regardless of frame time.
+    const steps = Math.max(1, Math.ceil(dt / MAX_SUBSTEP));
+    const h = dt / steps;
     const goal = SHAPES[target.shape];
-    const [stiff, damp] = SHAPE_SPRING;
+    for (let s = 0; s < steps; s++) {
+      for (const k of SCALAR_KEYS) {
+        const [stiff, damp] = SPRING[k] ?? DEFAULT_SPRING;
+        const a = stiff * (target[k] - this.cur[k]) - damp * this.vel[k];
+        this.vel[k] += a * h;
+        this.cur[k] += this.vel[k] * h;
+      }
+      const [stiff, damp] = SHAPE_SPRING;
+      for (let i = 0; i < N; i++) {
+        const a = stiff * (goal[i] - this.radii[i]) - damp * this.radiiVel[i];
+        this.radiiVel[i] += a * h;
+        this.radii[i] += this.radiiVel[i] * h;
+      }
+    }
+    // last line of defence: never let a bad value stick
+    for (const k of SCALAR_KEYS) {
+      if (!Number.isFinite(this.cur[k]) || Math.abs(this.cur[k]) > 1e4) { this.cur[k] = target[k]; this.vel[k] = 0; }
+    }
     for (let i = 0; i < N; i++) {
-      const a = stiff * (goal[i] - this.radii[i]) - damp * this.radiiVel[i];
-      this.radiiVel[i] += a * dt;
-      this.radii[i] += this.radiiVel[i] * dt;
+      if (!Number.isFinite(this.radii[i])) { this.radii[i] = goal[i]; this.radiiVel[i] = 0; }
     }
   }
 
