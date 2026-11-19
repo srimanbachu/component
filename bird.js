@@ -76,21 +76,23 @@
   window.addEventListener('blur', () => { lookTarget = { x: 0, y: 0 }; });
 
   /* ---------- blink (Eyes=Closed) ---------- */
-  function scheduleBlink() {
-    setTimeout(() => {
-      if (shape === 'open') {
-        blinking = true;
-        setTimeout(() => { blinking = false; }, 120);
-        // occasional double blink
-        if (Math.random() < 0.2) setTimeout(() => {
-          blinking = true;
-          setTimeout(() => { blinking = false; }, 110);
-        }, 260);
-      }
-      scheduleBlink();
-    }, 2200 + Math.random() * 3200);
+  const BLINK_GAP = [2200, 5400];      // ms between blinks
+  const randomGap = ([a, b]) => a + Math.random() * (b - a);
+  let nextBlinkAt = performance.now() + randomGap(BLINK_GAP);
+
+  function blink(ms = 120) {
+    blinking = true;
+    setTimeout(() => { blinking = false; }, ms);
   }
-  scheduleBlink();
+
+  function updateBlink(now) {
+    if (now < nextBlinkAt) return;
+    if (shape === 'open') {
+      blink(120);
+      if (Math.random() < 0.2) setTimeout(() => blink(110), 260);  // occasional double blink
+    }
+    nextBlinkAt = now + randomGap(BLINK_GAP);
+  }
 
   /* ---------- press → rebound → open (Eyes=Pressed / Rebound) ---------- */
   function press() {
@@ -129,6 +131,8 @@
   function tick(now) {
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
+    updateBlink(now);
+
     // no pointer events arrive while the cursor rests, so bleed velocity off here
     const decay = Math.exp(-dt * 9);
     cursorVel.x *= decay;
