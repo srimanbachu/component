@@ -18,6 +18,8 @@ export type VoiceEngineEvents = {
   onStatus: (s: Status) => void;
   onTranscript: (t: Transcript) => void;
   onListening: (listening: boolean) => void;
+  /** optional: called once per finished phrase with just that phrase's text */
+  onPhrase?: (text: string) => void;
 };
 
 // Whisper sometimes "hears" captions in near-silence; drop those.
@@ -138,7 +140,10 @@ export class VoiceEngine {
       this.busy = false;
       const text = cleanText(data.text);
       if (data.final) {
-        if (text) this.finalText += (this.finalText ? ' ' : '') + text;
+        if (text) {
+          this.finalText += (this.finalText ? ' ' : '') + text;
+          this.events.onPhrase?.(text);
+        }
         // the preview for this phrase is now replaced by the final text
         if (this.interimFor === data.phrase) this.interimText = '';
       } else if (this.speaking && data.phrase === this.phraseNo) {
