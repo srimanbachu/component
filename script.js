@@ -236,6 +236,7 @@ async function startListening() {
   if (!modelReady) { setStatus('Speech model still loading, one moment…'); return; }
   wantListening = true;
   orbWrap.classList.add('listening');
+  window.Bird?.setListening(true);
   micBtn.setAttribute('aria-label', 'Stop listening');
   setStatus('Listening…', true);
   try {
@@ -244,6 +245,7 @@ async function startListening() {
   } catch (err) {
     wantListening = false;
     orbWrap.classList.remove('listening');
+    window.Bird?.setListening(false);
     stopMic();
     setStatus(err.name === 'NotAllowedError'
       ? 'Microphone blocked: allow it in the address bar and try again'
@@ -257,6 +259,7 @@ function stopListening() {
   endPhrase();               // transcribe whatever was being said
   stopMic();
   orbWrap.classList.remove('listening');
+  window.Bird?.setListening(false);
   micBtn.setAttribute('aria-label', 'Start listening');
   setStatus(IDLE_MSG);
 }
@@ -277,9 +280,10 @@ let pressAt = 0, startedByPress = false, pressing = false;
 function pressDown() {
   if (pressing) return;
   pressing = true;
-  window.Bird?.press();
   pressAt = performance.now();
   startedByPress = !wantListening;
+  // a press that actually starts recording squeezes the bird harder
+  window.Bird?.press({ deep: startedByPress && modelReady });
   if (startedByPress) startListening();
 }
 
