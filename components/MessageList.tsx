@@ -14,11 +14,9 @@ export default function MessageList({ messages, interim }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, interim]);
 
-  const empty = messages.length === 0 && !interim;
   return (
     <div className="messages-wrap">
       <div ref={ref} className="messages" aria-live="polite">
-        {empty && <p className="placeholder">Tap or hold the character to speak. Your words appear here.</p>}
         {messages.map(m => (
           <p key={m.id} className={`message ${m.via}`}>{m.text}</p>
         ))}
