@@ -202,15 +202,21 @@ export class BirdAnimator {
     t.by -= this.level * 26;
 
     const { cur, vel } = this;
+    // fixed small sub-steps keep the stiff eye spring stable on slow frames
+    const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
+    const h = dt / steps;
     for (const k of Object.keys(cur) as (keyof Anim)[]) {
       // eyes snap faster for blinks; body has a softer bouncy spring
       const isEye = k === 'ew' || k === 'eh';
       const isLook = k === 'lx' || k === 'ly' || k === 'bx' || k === 'by' || k === 'tilt';
       const stiffness = isEye ? 900 : isLook ? 160 : 520;
       const damping = isEye ? 48 : isLook ? 22 : 24;
-      const a = stiffness * (t[k] - cur[k]) - damping * vel[k];
-      vel[k] += a * dt;
-      cur[k] += vel[k] * dt;
+      for (let s = 0; s < steps; s++) {
+        const a = stiffness * (t[k] - cur[k]) - damping * vel[k];
+        vel[k] += a * h;
+        cur[k] += vel[k] * h;
+      }
+      if (!Number.isFinite(cur[k])) { cur[k] = t[k]; vel[k] = 0; }
     }
     this.draw();
     this.raf = requestAnimationFrame(this.tick);
