@@ -76,9 +76,11 @@
   window.addEventListener('blur', () => { lookTarget = { x: 0, y: 0 }; });
 
   /* ---------- blink (Eyes=Closed) ---------- */
-  const BLINK_GAP = [2200, 5400];      // ms between blinks
+  const BLINK_GAP = [2200, 5400];      // ms between blinks while the cursor moves
+  const BLINK_GAP_IDLE = [1600, 3800]; // a little more often when the cursor rests
   const randomGap = ([a, b]) => a + Math.random() * (b - a);
-  let nextBlinkAt = performance.now() + randomGap(BLINK_GAP);
+  const blinkGap = () => randomGap(cursorIdle() ? BLINK_GAP_IDLE : BLINK_GAP);
+  let nextBlinkAt = performance.now() + blinkGap();
 
   function blink(ms = 120) {
     blinking = true;
@@ -86,12 +88,16 @@
   }
 
   function updateBlink(now) {
-    if (now < nextBlinkAt) return;
+    if (now < nextBlinkAt) {
+      // cursor just came to rest: pull a far-off blink in to the idle cadence
+      if (cursorIdle() && nextBlinkAt - now > BLINK_GAP_IDLE[1]) nextBlinkAt = now + blinkGap();
+      return;
+    }
     if (shape === 'open') {
       blink(120);
       if (Math.random() < 0.2) setTimeout(() => blink(110), 260);  // occasional double blink
     }
-    nextBlinkAt = now + randomGap(BLINK_GAP);
+    nextBlinkAt = now + blinkGap();
   }
 
   /* ---------- press → rebound → open (Eyes=Pressed / Rebound) ---------- */
