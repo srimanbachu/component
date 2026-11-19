@@ -20,6 +20,8 @@ export type VoiceEngineEvents = {
   onListening: (listening: boolean) => void;
   /** optional: called once per finished phrase with just that phrase's text */
   onPhrase?: (text: string) => void;
+  /** optional: called once the speech model is ready */
+  onReady?: () => void;
 };
 
 // Whisper sometimes "hears" captions in near-silence; drop those.
@@ -135,6 +137,7 @@ export class VoiceEngine {
       this.setStatus(`Loading speech model… ${pct}% of ${mb} MB`);
     } else if (data.type === 'ready') {
       this.modelReady = true;
+      this.events.onReady?.();
       this.setStatus(this.wantListening ? 'Listening…' : this.idleMessage, this.wantListening);
     } else if (data.type === 'error') {
       this.setStatus('Could not load speech model: check your connection and reload');
