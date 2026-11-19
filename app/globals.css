@@ -119,7 +119,7 @@ html, body {
   text-align: center;
   white-space: pre-wrap;
 }
-#interim { color: var(--muted); }
+.interim { color: var(--muted); }
 
 /* ---------- Controls ---------- */
 .controls { display: flex; gap: 10px; }
