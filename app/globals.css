@@ -178,8 +178,8 @@ html, body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  /* start below the blur band so unscrolled text stays sharp */
-  padding: max(8px, calc(var(--blur-h) - 40px)) 4px 12px;
+  /* the full band height is padding, so text only enters the blur when it scrolls up */
+  padding: var(--blur-h) 4px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -189,7 +189,8 @@ html, body {
   scrollbar-width: none;
 }
 .messages::-webkit-scrollbar { display: none; }
-.messages .placeholder { margin: auto 0; }
+/* new messages stack from the bottom, right under the character's status */
+.messages > :first-child { margin-top: auto; }
 
 /* Progressive blur: stacked backdrop-filter layers, each stronger and
    masked to a higher slice of the band, so text gets blurrier the further
