@@ -10,14 +10,14 @@ import { ORBITS, orbitPath } from './orbits';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 export const VIEW = 600;            // viewBox size
 const C = VIEW / 2;                 // centre
-const R = 118;                      // base body radius (px in viewBox units)
+export const R = 150;               // base body radius (px in viewBox units)
 const INK = '#0a0a0a';
 
 type Scalars = Record<ScalarKey, number>;
 
 // spring tuning per value group: [stiffness, damping]
 const SPRING: Partial<Record<ScalarKey, [number, number]>> = {
-  eyeW: [520, 34], eyeH: [520, 34], eyeOpacity: [300, 30],
+  eyeW: [520, 34], eyeH: [520, 34], eyeOpacity: [900, 60],   // eyes vanish fast on tiny shapes
   gazeYaw: [140, 20], gazePitch: [140, 20],
   badge: [260, 16], dots: [220, 24],
 };
@@ -116,7 +116,7 @@ export class BlobAnimator {
 
     this.root = el('g', {}, svg);
     const ribbon = (i: number, parent: SVGGElement) =>
-      el('path', { fill: 'none', stroke: `url(#orbit-grad-${i})`, 'stroke-width': R * 0.055, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, parent);
+      el('path', { fill: 'none', stroke: `url(#orbit-grad-${i})`, 'stroke-width': R * 0.07, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, parent);
 
     const back = el('g', {}, this.root);
     this.orbitBack = ORBITS.map((_, i) => ribbon(i, back));
@@ -212,7 +212,7 @@ export class BlobAnimator {
       const { back, front } = orbitPath(spec, this.orbitClock, c.orbits, ox, oy, scale);
       this.orbitBack[i].setAttribute('d', back);
       this.orbitFront[i].setAttribute('d', front);
-      const w = (R * 0.055 * Math.max(0.35, c.orbitScale)).toFixed(1);
+      const w = (R * 0.07 * Math.max(0.35, c.orbitScale)).toFixed(1);
       this.orbitBack[i].setAttribute('stroke-width', w);
       this.orbitFront[i].setAttribute('stroke-width', w);
     });
@@ -256,7 +256,7 @@ export class BlobAnimator {
     const c = this.cur;
     const len = c.barLen * R;
     if (len < 2) { this.bar.setAttribute('d', ''); return; }
-    const gap = 0.14 * R;
+    const gap = c.barGap * R;          // negative = stick overlaps the body (pen)
     const up = (dist: number): [number, number] => [bx + sr * dist, by - cr * dist];  // "up" after rotation
     const [x0, y0] = up(c.sy * R + gap);
     const [x1, y1] = up(c.sy * R + gap + len);

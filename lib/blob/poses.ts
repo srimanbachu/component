@@ -15,6 +15,7 @@ export type Pose = {
   gazePitch: number;             //                                       + up
   follow: number;                // 0..1 how much the cursor may steer the gaze
   barLen: number; barW: number;  // exclamation stem / pen stick
+  barGap: number;                // space between body and stem (negative overlaps)
   barOpacity: number;
   dots: number;                  // 0..1 "thinking" dots
   badge: number;                 // notification badge size (0 = hidden)
@@ -30,11 +31,11 @@ export const BASE: Pose = {
   shape: 'circle',
   sx: 1, sy: 1, rot: 0, x: 0, y: 0,
   eyeOpacity: 1,
-  eyeW: 0.13, eyeH: 0.42, eyeGap: 0.45, eyeTilt: 0,
+  eyeW: 0.17, eyeH: 0.46, eyeGap: 0.45, eyeTilt: -8,
   // resting gaze: up and to the right, like the clip's first frame
   gazeYaw: 0.45, gazePitch: 0.55,
   follow: 1,
-  barLen: 0, barW: 0.2, barOpacity: 1,
+  barLen: 0, barW: 0.2, barGap: 0.14, barOpacity: 1,
   dots: 0, badge: 0,
   orbits: 0, orbitScale: 1, orbitX: 0, orbitY: 0,
   satellites: 0,
@@ -54,12 +55,12 @@ export const POSES = {
   squint:      pose({ eyeW: 0.17, eyeH: 0.05, gazeYaw: 0.1, gazePitch: 0.25, follow: 0.6 }),
   happy:       pose({ eyeW: 0.2, eyeH: 0.08, eyeTilt: 12, gazeYaw: 0, gazePitch: 0.08, follow: 0.6 }),
   curious:     pose({ eyeW: 0.22, eyeH: 0.52, eyeGap: 0.55, gazeYaw: -0.3, gazePitch: -0.3 }),
-  pen:         pose({ shape: 'drop', sx: 0.36, sy: 0.36, rot: 35, barLen: 0.42, barW: 0.16, barOpacity: 0.72, ...hidden }),
+  pen:         pose({ shape: 'drop', sx: 0.36, sy: 0.36, rot: 35, barLen: 0.42, barW: 0.16, barGap: -0.08, barOpacity: 0.72, ...hidden }),
   exclaimTilt: pose({ sx: 0.16, sy: 0.16, rot: 18, x: 0.55, y: 0.35, barLen: 1.0, barW: 0.2, ...hidden }),
   exclaim:     pose({ sx: 0.15, sy: 0.15, y: 0.4, barLen: 1.1, barW: 0.22, ...hidden }),
-  stick:       pose({ sx: 0.42, sy: 0.42, y: 0.15, barLen: 0.38, barW: 0.16, barOpacity: 0.75, ...hidden }),
-  notify:      pose({ sx: 0.9, sy: 0.9, eyeW: 0.2, eyeH: 0.12, gazeYaw: -0.2, gazePitch: 0.02, badge: 1 }),
-  notifyBig:   pose({ eyeW: 0.26, eyeH: 0.3, gazeYaw: -0.45, gazePitch: -0.12, badge: 1.6 }),
+  stick:       pose({ sx: 0.42, sy: 0.42, y: 0.15, barLen: 0.38, barW: 0.16, barGap: -0.08, barOpacity: 0.75, ...hidden }),
+  notify:      pose({ sx: 0.9, sy: 0.9, eyeW: 0.27, eyeH: 0.17, eyeTilt: 0, gazeYaw: -0.2, gazePitch: 0.02, badge: 1 }),
+  notifyBig:   pose({ eyeW: 0.3, eyeH: 0.34, eyeTilt: 0, gazeYaw: -0.45, gazePitch: -0.12, badge: 1.6 }),
   dot:         pose({ sx: 0.19, sy: 0.19, ...hidden }),
   peek:        pose({ sx: 0.85, sy: 0.85, eyeW: 0.12, eyeH: 0.2, gazeYaw: 1.15, gazePitch: 0, follow: 0 }),
   egg:         pose({ shape: 'egg', eyeW: 0.12, eyeH: 0.32, gazeYaw: 0.35, gazePitch: 0.45 }),

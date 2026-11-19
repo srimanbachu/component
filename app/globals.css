@@ -142,7 +142,7 @@ html, body {
    Morphing blob assistant (home page)
    ========================================================= */
 .assistant {
-  --blob: min(60vmin, 460px);
+  --blob: min(54vmin, 440px);
   background: #fafafa;           /* the reference clip's off-white */
   gap: 1.4vh;
   padding-bottom: 2.5vh;
@@ -161,8 +161,8 @@ html, body {
   height: 100%;
   overflow: visible;
 }
-/* hit area covers just the body (radius 118 of a 600 viewBox ≈ 20%) */
-.blob-wrap .orb-hit { inset: 29%; }
+/* hit area covers just the body (radius 150 of a 600 viewBox = 25%) */
+.blob-wrap .orb-hit { inset: 25%; }
 
 /* ---------- messages ---------- */
 .messages {

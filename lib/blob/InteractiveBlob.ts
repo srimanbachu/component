@@ -1,7 +1,7 @@
 // Interactive layer on top of BlobAnimator: cursor-following gaze, body
 // drift/lean, blinking. Like the Rock bird, it only moves while the cursor
 // moves; when the cursor rests it holds still and blinks a little more.
-import { BlobAnimator, VIEW } from './BlobAnimator';
+import { BlobAnimator, R, VIEW } from './BlobAnimator';
 import { POSES, type Pose, type PoseName } from './poses';
 
 export type Reaction = 'sent' | 'question' | 'heard';
@@ -100,15 +100,15 @@ export class InteractiveBlob extends BlobAnimator {
 
     const r = this.svg.getBoundingClientRect();
     const px = r.width / VIEW;                       // screen px per viewBox unit
-    const cx = r.left + r.width / 2 + this.cur.x * 118 * px;
-    const cy = r.top + r.height / 2 + this.cur.y * 118 * px;
+    const cx = r.left + r.width / 2 + this.cur.x * R * px;
+    const cy = r.top + r.height / 2 + this.cur.y * R * px;
     const dx = x - cx, dy = y - cy;
     const reach = r.width * 0.45;
     // gaze and drift only change on movement, so a resting cursor = a still blob
     this.cursorGaze = { yaw: clamp1(dx / reach) * 1.0, pitch: clamp1(-dy / reach) * 0.85 };
     const travel = DRIFT * this.motion();
     this.driftTarget = { x: clamp1(dx / (reach * 3)) * travel, y: clamp1(dy / (reach * 3)) * travel };
-    this.hovering = Math.hypot(dx, dy) < 118 * px * 1.1 * Math.max(this.cur.sx, 0.3);
+    this.hovering = Math.hypot(dx, dy) < R * px * 1.1 * Math.max(this.cur.sx, 0.3);
   };
 
   private recentre = () => {
