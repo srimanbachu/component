@@ -218,9 +218,10 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* only the bottom edge fades; the top edge blurs instead (see .messages-blur) */
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent 100%);
+  /* Text blurs as it rises (see .messages-blur) and has fully faded out
+     before it reaches the clip edge, so the cut-off never shows as a line. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent 8%, #000 calc(var(--blur-h) * 0.85), #000 calc(100% - 14px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 8%, #000 calc(var(--blur-h) * 0.85), #000 calc(100% - 14px), transparent 100%);
   scrollbar-width: none;
 }
 .messages::-webkit-scrollbar { display: none; }
