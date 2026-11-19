@@ -4,16 +4,14 @@
 import { BlobAnimator, R, VIEW } from './BlobAnimator';
 import { POSES, type Pose, type PoseName } from './poses';
 
-export type Reaction = 'sent' | 'question' | 'heard';
+export type Reaction = 'heard';
 
 // short pose sequences played in response to events: [pose, ms, overrides?]
 type Step = [PoseName, number, Partial<Pose>?];
 const REACTIONS: Record<Reaction, Step[]> = {
-  sent:     [['exclaim', 650], ['happy', 900]],                     // you sent a message
-  question: [['thinking', 600], ['curious', 1200]],                 // ...that ends with "?"
   heard:    [['notify', 1100], ['idle', 200, { badge: 0 }]],        // a voice phrase was transcribed
 };
-const TYPING_HOLD_MS = 700;   // thinking dots stay this long after the last keystroke
+
 
 const IDLE_AFTER_MS = 700;
 const BLINK_GAP: [number, number] = [2200, 5400];       // ms, cursor moving
@@ -44,7 +42,6 @@ export class InteractiveBlob extends BlobAnimator {
   private reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // activity
-  private lastKeyAt = -Infinity;
   private listening = false;
   private level = 0;
   private prevLevel = 0;
@@ -53,8 +50,6 @@ export class InteractiveBlob extends BlobAnimator {
   private reboundUntil = 0;
 
   /* ---------- public controls ---------- */
-  /** Call on every keystroke in the composer. */
-  noteTyping() { this.lastKeyAt = performance.now(); }
   setListening(v: boolean) { this.listening = v; }
   setLevel(v: number) { this.level = v; }
   react(kind: Reaction) { this.reaction = { steps: REACTIONS[kind], start: performance.now() }; }
@@ -131,7 +126,6 @@ export class InteractiveBlob extends BlobAnimator {
       }
       this.reaction = null;
     }
-    if (now - this.lastKeyAt < TYPING_HOLD_MS) return { ...POSES.thinking };
     if (this.listening) return { ...POSES.listening };
     if (this.hovering) return { ...POSES.idle, eyeW: POSES.idle.eyeW * 1.12, eyeH: POSES.idle.eyeH * 1.15 };
     return { ...POSES.idle };

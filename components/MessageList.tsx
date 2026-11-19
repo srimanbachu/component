@@ -17,10 +17,10 @@ export default function MessageList({ messages, interim }: Props) {
   const empty = messages.length === 0 && !interim;
   return (
     <div ref={ref} className="messages" aria-live="polite">
-      {empty && <p className="placeholder">Type below or tap the mic. Your words appear here.</p>}
+      {empty && <p className="placeholder">Tap or hold the character to speak. Your words appear here.</p>}
       {messages.map(m => (
         <p key={m.id} className={`message ${m.via}`}>
-          <span className="via" aria-label={m.via === 'voice' ? 'spoken' : 'typed'}>{m.via === 'voice' ? '🎙' : '⌨'}</span>
+          <span className="via" aria-label={m.via === "voice" ? "spoken" : "typed"}>{m.via === "voice" ? "🎙" : "⌨"}</span>
           {m.text}
         </p>
       ))}

@@ -4,7 +4,6 @@ import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from
 import { InteractiveBlob, type Reaction } from '@/lib/blob/InteractiveBlob';
 
 export type MorphBlobHandle = {
-  noteTyping: () => void;
   setListening: (v: boolean) => void;
   setLevel: (v: number) => void;
   react: (r: Reaction) => void;
@@ -33,7 +32,6 @@ export default function MorphBlob({ ref, listening, children }: Props) {
   useEffect(() => { blob.current?.setListening(listening); }, [listening]);
 
   useImperativeHandle(ref, () => ({
-    noteTyping: () => blob.current?.noteTyping(),
     setListening: v => blob.current?.setListening(v),
     setLevel: v => blob.current?.setLevel(v),
     react: r => blob.current?.react(r),

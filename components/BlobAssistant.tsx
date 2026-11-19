@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import MorphBlob, { type MorphBlobHandle } from './MorphBlob';
 import MessageList, { type Message } from './MessageList';
-import Composer from './Composer';
 import { VoiceEngine, type Status } from '@/lib/voice/VoiceEngine';
 
 const HOLD_MS = 350; // pressing the blob longer than this = push-to-talk
@@ -99,19 +98,6 @@ export default function BlobAssistant() {
     };
   }, [pressDown, pressUp]);
 
-  /* ---------- composer ---------- */
-  const send = (text: string) => {
-    addMessage(text, 'typed');
-    blob.current?.react(text.endsWith('?') ? 'question' : 'sent');
-  };
-
-  const toggleMic = () => {
-    const e = engine.current;
-    if (!e) return;
-    if (e.wantListening) e.stopListening();
-    else e.startListening();
-  };
-
   const allText = messages.map(m => m.text).join('\n');
   const copy = async () => {
     if (!allText) return;
@@ -148,13 +134,6 @@ export default function BlobAssistant() {
         <button className="chip" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
         <button className="chip" type="button" onClick={() => { setMessages([]); engine.current?.clear(); }}>Clear</button>
       </div>
-
-      <Composer
-        listening={listening}
-        onType={() => blob.current?.noteTyping()}
-        onSend={send}
-        onMicToggle={toggleMic}
-      />
     </main>
   );
 }
