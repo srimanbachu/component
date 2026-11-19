@@ -149,6 +149,7 @@
   }
 
   let last = performance.now();
+  let prevLevel = 0;
   function tick(now) {
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
@@ -159,6 +160,12 @@
     cursorVel.x *= decay;
     cursorVel.y *= decay;
     const t = target();
+
+    // speech onset (level jumps) kicks the bird into a little hop
+    if (level - prevLevel > 0.12 && shape === 'open') vel.by -= 260 + level * 380;
+    prevLevel = level;
+    // and it floats a touch higher while you keep talking
+    t.by -= level * 26;
 
     for (const k in cur) {
       // eyes snap faster for blinks; body has a softer bouncy spring
