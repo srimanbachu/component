@@ -9,7 +9,7 @@ const MAX_PHRASE_S = 20;       // force-cut very long phrases
 const MIN_PHRASE_MS = 350;     // ignore clicks / coughs
 const INTERIM_EVERY_MS = 1200; // live preview cadence while speaking
 
-export const IDLE_MSG = 'Tap or hold the bird to speak';
+export const IDLE_MSG = 'Tap or hold the bird to speak';  // default idle status
 
 export type Status = { text: string; on: boolean };
 export type Transcript = { final: string; interim: string };
@@ -60,8 +60,11 @@ export class VoiceEngine {
   private phraseNo = 0;    // id of the phrase being spoken
   private interimFor = 0;  // which phrase the grey preview text belongs to
 
-  constructor(events: VoiceEngineEvents) {
+  private idleMessage: string;
+
+  constructor(events: VoiceEngineEvents, opts: { idleMessage?: string } = {}) {
     this.events = events;
+    this.idleMessage = opts.idleMessage ?? IDLE_MSG;
     this.worker = new Worker(new URL('../../workers/whisper.worker.ts', import.meta.url), { type: 'module' });
     this.worker.onmessage = (e: MessageEvent<WorkerResponse>) => this.onWorker(e.data);
   }
@@ -117,7 +120,7 @@ export class VoiceEngine {
     this.mic = null;
     this.rawLevel = 0;
     this.events.onListening(false);
-    this.setStatus(IDLE_MSG);
+    this.setStatus(this.idleMessage);
   }
 
   /* ---------- worker ---------- */
@@ -132,7 +135,7 @@ export class VoiceEngine {
       this.setStatus(`Loading speech model… ${pct}% of ${mb} MB`);
     } else if (data.type === 'ready') {
       this.modelReady = true;
-      this.setStatus(this.wantListening ? 'Listening…' : IDLE_MSG, this.wantListening);
+      this.setStatus(this.wantListening ? 'Listening…' : this.idleMessage, this.wantListening);
     } else if (data.type === 'error') {
       this.setStatus('Could not load speech model: check your connection and reload');
       console.error(data.message);

@@ -34,7 +34,7 @@ export default function BlobAssistant() {
         addMessage(text, 'voice');
         blob.current?.react('heard');
       },
-    });
+    }, { idleMessage: 'Tap the character or the mic to speak' });
     engine.current = e;
     e.load();
     return () => { e.dispose(); engine.current = null; };
