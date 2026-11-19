@@ -38,7 +38,23 @@
   let reboundTimer = null;
 
   /* ---------- cursor tracking ---------- */
+  const IDLE_AFTER_MS = 700;   // cursor counts as "still" after this long without moving
+  let lastMoveAt = -Infinity;
+  let lastPointer = null;      // { x, y, t } of the previous pointermove
+  const cursorVel = { x: 0, y: 0 };   // px per second, smoothed
+
+  const cursorIdle = () => performance.now() - lastMoveAt > IDLE_AFTER_MS;
+
   function onPointer(x, y) {
+    const now = performance.now();
+    if (lastPointer) {
+      const dt = Math.max(0.008, (now - lastPointer.t) / 1000);
+      cursorVel.x += ((x - lastPointer.x) / dt - cursorVel.x) * 0.35;
+      cursorVel.y += ((y - lastPointer.y) / dt - cursorVel.y) * 0.35;
+    }
+    lastPointer = { x, y, t: now };
+    lastMoveAt = now;
+
     const r = wrap.getBoundingClientRect();
     const dx = x - (r.left + r.width / 2);
     const dy = y - (r.top + r.height / 2);
