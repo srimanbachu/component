@@ -166,7 +166,7 @@ html, body {
 
 /* ---------- messages ---------- */
 .messages-wrap {
-  --blur-h: 72px;                /* height of the blurred band at the top */
+  --blur-h: clamp(36px, 7vh, 72px);   /* height of the blurred band at the top */
   position: relative;
   width: min(640px, 100%);
   flex: 1;
@@ -179,7 +179,7 @@ html, body {
   min-height: 0;
   overflow-y: auto;
   /* start below the blur band so unscrolled text stays sharp */
-  padding: calc(var(--blur-h) - 40px) 4px 12px;
+  padding: max(8px, calc(var(--blur-h) - 40px)) 4px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
