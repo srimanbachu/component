@@ -29,7 +29,7 @@
   const far = document.getElementById('birdFarEye');
 
   // spring state for every animated value
-  const cur = { ...STATES.open, lx: 0, ly: 0, bx: 0, by: 0 };
+  const cur = { ...STATES.open, lx: 0, ly: 0, bx: 0, by: 0, tilt: 0 };
   const vel = Object.fromEntries(Object.keys(cur).map(k => [k, 0]));
 
   let shape = 'open';        // open | pressed | rebound
@@ -38,6 +38,7 @@
   let lookTarget = { x: 0, y: 0 };
   const BODY_SHIFT = 70;     // max body travel toward the cursor (Figma px)
   let bodyTarget = { x: 0, y: 0 };
+  const MAX_TILT = 9;        // degrees of lean at fast cursor speed
   let reboundTimer = null;
 
   /* ---------- cursor tracking ---------- */
@@ -113,19 +114,25 @@
       base.dy -= level * 9;
       base.eh += level * 22;
     }
-    return { ...base, lx: lookTarget.x, ly: lookTarget.y, bx: bodyTarget.x, by: bodyTarget.y };
+    // lean into the cursor's motion; fades to upright once the cursor stops
+    const tilt = Math.max(-1, Math.min(1, cursorVel.x / 1400)) * MAX_TILT;
+    return { ...base, lx: lookTarget.x, ly: lookTarget.y, bx: bodyTarget.x, by: bodyTarget.y, tilt };
   }
 
   let last = performance.now();
   function tick(now) {
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
+    // no pointer events arrive while the cursor rests, so bleed velocity off here
+    const decay = Math.exp(-dt * 9);
+    cursorVel.x *= decay;
+    cursorVel.y *= decay;
     const t = target();
 
     for (const k in cur) {
       // eyes snap faster for blinks; body has a softer bouncy spring
       const isEye = k === 'ew' || k === 'eh';
-      const isLook = k === 'lx' || k === 'ly' || k === 'bx' || k === 'by';
+      const isLook = k === 'lx' || k === 'ly' || k === 'bx' || k === 'by' || k === 'tilt';
       const stiffness = isEye ? 900 : isLook ? 160 : 520;
       const damping = isEye ? 48 : isLook ? 22 : 24;
       const a = stiffness * (t[k] - cur[k]) - damping * vel[k];
@@ -133,7 +140,8 @@
       cur[k] += vel[k] * dt;
     }
 
-    group.setAttribute('transform', `translate(${cur.bx.toFixed(2)} ${cur.by.toFixed(2)})`);
+    group.setAttribute('transform',
+      `translate(${cur.bx.toFixed(2)} ${cur.by.toFixed(2)}) rotate(${cur.tilt.toFixed(2)} ${CX} ${CY})`);
 
     const bodyCy = CY + cur.dy;
     body.setAttribute('rx', cur.rx.toFixed(2));
