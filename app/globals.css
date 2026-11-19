@@ -165,22 +165,57 @@ html, body {
 .blob-wrap .orb-hit { inset: 25%; }
 
 /* ---------- messages ---------- */
-.messages {
+.messages-wrap {
+  --blur-h: 72px;                /* height of the blurred band at the top */
+  position: relative;
   width: min(640px, 100%);
   flex: 1;
   min-height: 0;
+  display: flex;
+  border-top: 1px solid var(--line);
+}
+.messages {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 12px 4px;
+  /* start below the blur band so unscrolled text stays sharp */
+  padding: calc(var(--blur-h) - 40px) 4px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-top: 1px solid var(--line);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  /* only the bottom edge fades; the top edge blurs instead (see .messages-blur) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent 100%);
   scrollbar-width: none;
 }
 .messages::-webkit-scrollbar { display: none; }
 .messages .placeholder { margin: auto 0; }
+
+/* Progressive blur: stacked backdrop-filter layers, each stronger and
+   masked to a higher slice of the band, so text gets blurrier the further
+   it scrolls up. */
+.messages-blur {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--blur-h);
+  pointer-events: none;
+  z-index: 1;
+}
+.messages-blur span {
+  position: absolute;
+  inset: 0;
+}
+.messages-blur span:nth-child(1) { --b: 0.5px; --from: 0%;  --to: 30%; }
+.messages-blur span:nth-child(2) { --b: 1px;   --from: 15%; --to: 45%; }
+.messages-blur span:nth-child(3) { --b: 2px;   --from: 30%; --to: 60%; }
+.messages-blur span:nth-child(4) { --b: 4px;   --from: 45%; --to: 80%; }
+.messages-blur span:nth-child(5) { --b: 8px;   --from: 60%; --to: 100%; }
+.messages-blur span {
+  -webkit-backdrop-filter: blur(var(--b));
+  backdrop-filter: blur(var(--b));
+  -webkit-mask-image: linear-gradient(to top, transparent var(--from), #000 var(--to));
+  mask-image: linear-gradient(to top, transparent var(--from), #000 var(--to));
+}
 
 .message {
   align-self: center;
@@ -191,11 +226,6 @@ html, body {
   text-align: center;
   overflow-wrap: anywhere;
   animation: message-in 0.35s cubic-bezier(.2, .8, .2, 1);
-}
-.message .via {
-  font-size: 0.75em;
-  margin-right: 0.5em;
-  opacity: 0.45;
 }
 .message.interim { color: var(--muted); animation: none; }
 @keyframes message-in {
