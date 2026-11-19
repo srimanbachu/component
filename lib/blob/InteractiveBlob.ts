@@ -54,12 +54,12 @@ export class InteractiveBlob extends BlobAnimator {
 
   /* ---------- public controls ---------- */
   /** Call on every keystroke in the composer. */
-  noteTyping() { this.skipIntro(); this.lastKeyAt = performance.now(); }
-  setListening(v: boolean) { if (v) this.skipIntro(); this.listening = v; }
+  noteTyping() { this.lastKeyAt = performance.now(); }
+  setListening(v: boolean) { this.listening = v; }
   setLevel(v: number) { this.level = v; }
-  react(kind: Reaction) { this.skipIntro(); this.reaction = { steps: REACTIONS[kind], start: performance.now() }; }
+  react(kind: Reaction) { this.reaction = { steps: REACTIONS[kind], start: performance.now() }; }
   /** deep = this press starts a recording -> squeeze harder */
-  press(deep = false) { this.skipIntro(); this.pressed = deep ? 'deep' : 'soft'; }
+  press(deep = false) { this.pressed = deep ? 'deep' : 'soft'; }
   release() {
     if (this.pressed === 'no') return;
     this.pressed = 'no';
@@ -121,7 +121,6 @@ export class InteractiveBlob extends BlobAnimator {
 
   /* ---------- pose selection ---------- */
   protected override targetPose(): Pose {
-    if (this.introPlaying) return super.targetPose();
     const now = performance.now();
 
     if (this.reaction) {
@@ -197,9 +196,9 @@ export class InteractiveBlob extends BlobAnimator {
     const tiltGoal = clamp1(this.cursorVel.x / 1400) * MAX_TILT * this.motion();
     this.tilt += (tiltGoal - this.tilt) * Math.min(1, dt * 10);
 
-    // gaze: blend the pose's gaze with the cursor (less during the intro)
+    // gaze: blend the pose's gaze with the cursor
     if (this.hasCursor && target.follow > 0) {
-      const w = target.follow * (this.introPlaying ? 0.5 : 1);
+      const w = target.follow;
       target.gazeYaw += (this.cursorGaze.yaw - target.gazeYaw) * w;
       target.gazePitch += (this.cursorGaze.pitch - target.gazePitch) * w;
     }

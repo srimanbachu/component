@@ -4,8 +4,6 @@ import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from
 import { InteractiveBlob, type Reaction } from '@/lib/blob/InteractiveBlob';
 
 export type MorphBlobHandle = {
-  playIntro: () => void;
-  skipIntro: () => void;
   noteTyping: () => void;
   setListening: (v: boolean) => void;
   setLevel: (v: number) => void;
@@ -17,32 +15,24 @@ export type MorphBlobHandle = {
 type Props = {
   ref?: Ref<MorphBlobHandle>;
   listening: boolean;
-  onIntroEnd?: () => void;
   children?: ReactNode;   // e.g. the invisible hit button over the body
 };
 
 /** The morphing character. The animator owns the SVG's children and draws every frame. */
-export default function MorphBlob({ ref, listening, onIntroEnd, children }: Props) {
+export default function MorphBlob({ ref, listening, children }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const blob = useRef<InteractiveBlob | null>(null);
-  const introEnd = useRef(onIntroEnd);
-  introEnd.current = onIntroEnd;
 
   useEffect(() => {
-    const b = new InteractiveBlob(svgRef.current!, { onIntroEnd: () => introEnd.current?.() });
+    const b = new InteractiveBlob(svgRef.current!);
     blob.current = b;
     b.start();
-    // play the intro unless the user prefers reduced motion
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) b.playIntro();
-    else introEnd.current?.();
     return () => { b.destroy(); blob.current = null; };
   }, []);
 
   useEffect(() => { blob.current?.setListening(listening); }, [listening]);
 
   useImperativeHandle(ref, () => ({
-    playIntro: () => blob.current?.playIntro(),
-    skipIntro: () => blob.current?.skipIntro(),
     noteTyping: () => blob.current?.noteTyping(),
     setListening: v => blob.current?.setListening(v),
     setLevel: v => blob.current?.setLevel(v),

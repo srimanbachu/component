@@ -3,7 +3,6 @@
 // point between shapes, and every pose value eases with a little overshoot.
 import { ANGLES, N, SHAPES } from './shapes';
 import { BASE, SCALAR_KEYS, type Pose, type ScalarKey } from './poses';
-import { INTRO_LENGTH, introPoseAt } from './timeline';
 import { projectEye } from './eyes';
 import { ORBITS, orbitPath } from './orbits';
 
@@ -56,12 +55,8 @@ export class BlobAnimator {
   private last = 0;
   private raf = 0;
 
-  protected introStart: number | null = null;
-  private onIntroEnd?: () => void;
-
-  constructor(svg: SVGSVGElement, opts: { onIntroEnd?: () => void } = {}) {
+  constructor(svg: SVGSVGElement) {
     this.svg = svg;
-    this.onIntroEnd = opts.onIntroEnd;
     this.build();
   }
 
@@ -76,21 +71,8 @@ export class BlobAnimator {
     this.svg.replaceChildren();
   }
 
-  playIntro() { this.introStart = this.time; }
-  skipIntro() {
-    if (this.introStart === null) return;
-    this.introStart = null;
-    this.onIntroEnd?.();
-  }
-  get introPlaying() { return this.introStart !== null; }
-
   /* ---------- pose selection (extended by subclasses) ---------- */
   protected targetPose(): Pose {
-    if (this.introStart !== null) {
-      const t = this.time - this.introStart;
-      if (t >= INTRO_LENGTH) { this.skipIntro(); return { ...BASE }; }
-      return introPoseAt(t);
-    }
     return { ...BASE };
   }
 

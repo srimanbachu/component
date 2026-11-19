@@ -17,7 +17,6 @@ export default function BlobAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [interim, setInterim] = useState('');
   const [listening, setListening] = useState(false);
-  const [introPlaying, setIntroPlaying] = useState(true);
   const [copied, setCopied] = useState(false);
 
   const addMessage = useCallback((text: string, via: Message['via']) => {
@@ -125,7 +124,7 @@ export default function BlobAssistant() {
 
   return (
     <main className="stage assistant">
-      <MorphBlob ref={blob} listening={listening} onIntroEnd={() => setIntroPlaying(false)}>
+      <MorphBlob ref={blob} listening={listening}>
         <button
           className="orb-hit"
           aria-label={listening ? 'Stop listening' : 'Start listening'}
@@ -146,9 +145,6 @@ export default function BlobAssistant() {
       <MessageList messages={messages} interim={interim} />
 
       <div className="controls">
-        {introPlaying
-          ? <button className="chip" type="button" onClick={() => blob.current?.skipIntro()}>Skip intro</button>
-          : <button className="chip" type="button" onClick={() => { blob.current?.playIntro(); setIntroPlaying(true); }}>Replay intro</button>}
         <button className="chip" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
         <button className="chip" type="button" onClick={() => { setMessages([]); engine.current?.clear(); }}>Clear</button>
       </div>
