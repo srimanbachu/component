@@ -1,9 +1,10 @@
 # Rock bird voice notes
 
-A Next.js app where you talk to a cursor-following character and your words appear as text below it.
+A Next.js app with two talking characters. Your typed or spoken words appear as text below them.
 
+- **`/`: morphing blob assistant.** A black character that plays a 30-second intro, then follows your cursor and reacts to what you type and say. It morphs between a sphere, dots, a pen nib, an exclamation mark, an egg, a hexagon and a triangle with rainbow orbits.
+- **`/bird`: Rock bird.** Comes from the Figma component *Rock bird • hover + blink*. Its Open, Closed, Pressed and Rebound variants are animated with springs.
 - **Speech to text runs locally** in the browser with [Whisper](https://huggingface.co/onnx-community/whisper-base) via [Transformers.js](https://github.com/huggingface/transformers.js). No Google speech service and no API keys, so it works in Chrome, Edge, Safari, Firefox, Brave and Arc.
-- **The bird** comes from the Figma component *Rock bird • hover + blink*. Its Open, Closed, Pressed and Rebound variants are animated with springs.
 
 ## Run
 
@@ -18,7 +19,23 @@ npm run build && npm start
 
 The first load downloads the speech model (about 200 MB). The browser caches it, so later loads are fast. Mic access needs `localhost` or HTTPS.
 
-## Using it
+## The blob (`/`)
+
+| You do | The blob does |
+|---|---|
+| Open the page | Plays the 30-second intro (**Skip intro** / **Replay intro** under the messages) |
+| Move the cursor | Eyes track it across the sphere, the body drifts and leans toward it |
+| Stop moving the cursor | Holds still and blinks a little more often |
+| Type in the box | Turns into three "thinking" dots while you type |
+| Send a message | Becomes an exclamation mark, then smiles |
+| Send a question (`…?`) | Thinks, then looks curious |
+| Tap the mic or the blob | Starts listening: rainbow orbits appear and pulse with your voice |
+| Hold the blob or Space | Push to talk |
+| A spoken phrase is transcribed | Blue notification badge pops; the phrase is added as a 🎙 message |
+
+Users with *reduce motion* turned on skip the autoplaying intro and get gentler movement.
+
+## The bird (`/bird`)
 
 | Action | What happens |
 |---|---|
@@ -32,25 +49,31 @@ The first load downloads the speech model (about 200 MB). The browser caches it,
 
 ```
 app/
-  layout.tsx            root layout + metadata
-  page.tsx              home page
-  globals.css           white theme, listening ring, transcript
-  icon.svg              favicon
+  page.tsx              blob assistant (home)
+  bird/page.tsx         Rock bird
+  layout.tsx, globals.css, icon.svg
 components/
-  VoiceBird.tsx         wires bird, voice engine and input (tap/hold, Space)
-  Bird.tsx              bird SVG + imperative handle around BirdAnimator
-  Transcript.tsx        final + live preview text
-  TranscriptControls.tsx copy / clear
+  BlobAssistant.tsx     blob page: wires blob, voice engine, messages, composer
+  MorphBlob.tsx         <svg> host + imperative handle for the blob animator
+  MessageList.tsx       typed / spoken messages with live voice preview
+  Composer.tsx          text input, mic and send buttons
+  VoiceBird.tsx         bird page
+  Bird.tsx, Transcript.tsx, TranscriptControls.tsx
 lib/
-  bird/geometry.ts      Figma variant geometry (Open, Closed, Pressed, Rebound)
-  bird/BirdAnimator.ts  springs, cursor tracking, blinking, press, voice reaction
+  blob/shapes.ts        body silhouettes as radii at 128 angles (morph = interpolate)
+  blob/poses.ts         named poses read off the reference animation
+  blob/timeline.ts      the 30-second intro keyframes
+  blob/eyes.ts          eyes projected onto a 3D sphere
+  blob/orbits.ts        rainbow ribbons split into behind/in-front halves
+  blob/BlobAnimator.ts  springs + SVG drawing
+  blob/InteractiveBlob.ts  cursor, blink, typing/listening states, reactions
+  bird/geometry.ts, bird/BirdAnimator.ts
   voice/VoiceEngine.ts  voice activity detection, phrase queue, worker messaging
-  voice/audio.ts        mic capture (AudioWorklet), resampling
-  voice/messages.ts     typed worker protocol
+  voice/audio.ts, voice/messages.ts
 workers/
   whisper.worker.ts     Whisper model running in a Web Worker
 ```
 
-Animation and audio run outside React state: `BirdAnimator` writes SVG attributes each frame, so the bird never causes re-renders.
+Both characters animate outside React state: the animators write SVG attributes each frame, so animation never causes re-renders.
 
 To change the language, set `LANGUAGE` in `workers/whisper.worker.ts` (for example `'hindi'`, or `undefined` to auto-detect).
