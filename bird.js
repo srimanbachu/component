@@ -23,18 +23,21 @@
   const KEYS = Object.keys(STATES.open);
 
   const wrap = document.getElementById('orbWrap');
+  const group = document.getElementById('birdGroup');
   const body = document.getElementById('birdBody');
   const near = document.getElementById('birdNearEye');
   const far = document.getElementById('birdFarEye');
 
   // spring state for every animated value
-  const cur = { ...STATES.open, lx: 0, ly: 0 };
+  const cur = { ...STATES.open, lx: 0, ly: 0, bx: 0, by: 0 };
   const vel = Object.fromEntries(Object.keys(cur).map(k => [k, 0]));
 
   let shape = 'open';        // open | pressed | rebound
   let blinking = false;
   let level = 0;             // voice level 0..1, set from script.js
   let lookTarget = { x: 0, y: 0 };
+  const BODY_SHIFT = 70;     // max body travel toward the cursor (Figma px)
+  let bodyTarget = { x: 0, y: 0 };
   let reboundTimer = null;
 
   /* ---------- cursor tracking ---------- */
@@ -63,6 +66,9 @@
     const reach = r.width * 0.9;
     const clamp = v => Math.max(-1, Math.min(1, v));
     lookTarget = { x: clamp(dx / reach) * LOOK_X, y: clamp(dy / reach) * LOOK_Y };
+    // the whole bird drifts toward the cursor; only updated on movement,
+    // so when the cursor rests the bird holds its pose
+    bodyTarget = { x: clamp(dx / (reach * 2)) * BODY_SHIFT, y: clamp(dy / (reach * 2)) * BODY_SHIFT };
   }
   window.addEventListener('pointermove', e => onPointer(e.clientX, e.clientY), { passive: true });
   document.addEventListener('pointerleave', () => { lookTarget = { x: 0, y: 0 }; });
@@ -107,7 +113,7 @@
       base.dy -= level * 9;
       base.eh += level * 22;
     }
-    return { ...base, lx: lookTarget.x, ly: lookTarget.y };
+    return { ...base, lx: lookTarget.x, ly: lookTarget.y, bx: bodyTarget.x, by: bodyTarget.y };
   }
 
   let last = performance.now();
@@ -119,13 +125,15 @@
     for (const k in cur) {
       // eyes snap faster for blinks; body has a softer bouncy spring
       const isEye = k === 'ew' || k === 'eh';
-      const isLook = k === 'lx' || k === 'ly';
+      const isLook = k === 'lx' || k === 'ly' || k === 'bx' || k === 'by';
       const stiffness = isEye ? 900 : isLook ? 160 : 520;
       const damping = isEye ? 48 : isLook ? 22 : 24;
       const a = stiffness * (t[k] - cur[k]) - damping * vel[k];
       vel[k] += a * dt;
       cur[k] += vel[k] * dt;
     }
+
+    group.setAttribute('transform', `translate(${cur.bx.toFixed(2)} ${cur.by.toFixed(2)})`);
 
     const bodyCy = CY + cur.dy;
     body.setAttribute('rx', cur.rx.toFixed(2));
