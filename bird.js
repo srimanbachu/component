@@ -40,6 +40,8 @@
   let shape = 'open';        // open | pressed | rebound
   let blinking = false;
   let level = 0;             // voice level 0..1, set from script.js
+  let listening = false;     // recording in progress
+  const LISTEN_SQUEEZE = 0.3;  // how far toward Pressed the body sits while recording
   let lookTarget = { x: 0, y: 0 };
   const BODY_SHIFT = 70;     // max body travel toward the cursor (Figma px)
   let bodyTarget = { x: 0, y: 0 };
@@ -121,6 +123,12 @@
   /* ---------- render loop ---------- */
   function target() {
     const base = { ...STATES[shape === 'open' && blinking ? 'closed' : shape] };
+    if (shape === 'open' && listening) {
+      // stay a little squeezed while recording (body only; eyes keep their state)
+      for (const k of ['rx', 'ry', 'dy', 'spread']) {
+        base[k] += (STATES.pressed[k] - STATES.open[k]) * LISTEN_SQUEEZE;
+      }
+    }
     if (shape === 'open' && !blinking) {
       // listening: the bird "breathes" with your voice, borrowing the rebound stretch
       base.ry += level * 18;
@@ -188,5 +196,6 @@
     press,
     release,
     setLevel(v) { level = v; },
+    setListening(v) { listening = !!v; },
   };
 })();
