@@ -22,6 +22,10 @@
   };
   const KEYS = Object.keys(STATES.open);
 
+  // users who ask for reduced motion get gentler travel, lean, stretch and hops
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const motion = () => (reduceMotion.matches ? 0.3 : 1);
+
   // Pressed variant pushed further from Open: used when a press starts recording
   const lerpState = (a, b, t) => Object.fromEntries(KEYS.map(k => [k, a[k] + (b[k] - a[k]) * t]));
   STATES.pressedDeep = lerpState(STATES.open, STATES.pressed, 1.6);
@@ -76,7 +80,8 @@
     lookTarget = { x: clamp(dx / reach) * LOOK_X, y: clamp(dy / reach) * LOOK_Y };
     // the whole bird drifts toward the cursor; only updated on movement,
     // so when the cursor rests the bird holds its pose
-    bodyTarget = { x: clamp(dx / (reach * 3)) * BODY_SHIFT, y: clamp(dy / (reach * 3)) * BODY_SHIFT };
+    const travel = BODY_SHIFT * motion();
+    bodyTarget = { x: clamp(dx / (reach * 3)) * travel, y: clamp(dy / (reach * 3)) * travel };
   }
   window.addEventListener('pointermove', e => onPointer(e.clientX, e.clientY), { passive: true });
   // cursor left the page: settle back to centre (eyes and body)
@@ -146,11 +151,11 @@
     // squash & stretch along the cursor's motion (cartoon follow-through)
     const sx = Math.min(1, Math.abs(cursorVel.x) / 1800);
     const sy = Math.min(1, Math.abs(cursorVel.y) / 1800);
-    base.rx += (sx - sy) * 16;
-    base.ry += (sy - sx) * 16;
+    base.rx += (sx - sy) * 16 * motion();
+    base.ry += (sy - sx) * 16 * motion();
 
     // lean into the cursor's motion; fades to upright once the cursor stops
-    const tilt = Math.max(-1, Math.min(1, cursorVel.x / 1400)) * MAX_TILT;
+    const tilt = Math.max(-1, Math.min(1, cursorVel.x / 1400)) * MAX_TILT * motion();
     return { ...base, lx: lookTarget.x, ly: lookTarget.y, bx: bodyTarget.x, by: bodyTarget.y, tilt };
   }
 
@@ -168,7 +173,7 @@
     const t = target();
 
     // speech onset (level jumps) kicks the bird into a little hop
-    if (level - prevLevel > 0.12 && shape === 'open') vel.by -= 260 + level * 380;
+    if (level - prevLevel > 0.12 && shape === 'open') vel.by -= (260 + level * 380) * motion();
     prevLevel = level;
     // and it floats a touch higher while you keep talking
     t.by -= level * 26;
