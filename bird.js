@@ -61,14 +61,14 @@
     const r = wrap.getBoundingClientRect();
     const dx = x - (r.left + r.width / 2);
     const dy = y - (r.top + r.height / 2);
-    // Figma's centre hover zone is ±190 px around a 623 px bird; scale that
-    // to the on-screen size so eyes reach full offset just outside the body.
-    const reach = r.width * 0.9;
+    // Figma's centre hover zone is ±190 px around a 623 px bird; scaled to
+    // the on-screen size so eyes reach full offset near the body's edge.
+    const reach = r.width * 0.6;   // eyes hit full offset sooner -> livelier tracking
     const clamp = v => Math.max(-1, Math.min(1, v));
     lookTarget = { x: clamp(dx / reach) * LOOK_X, y: clamp(dy / reach) * LOOK_Y };
     // the whole bird drifts toward the cursor; only updated on movement,
     // so when the cursor rests the bird holds its pose
-    bodyTarget = { x: clamp(dx / (reach * 2)) * BODY_SHIFT, y: clamp(dy / (reach * 2)) * BODY_SHIFT };
+    bodyTarget = { x: clamp(dx / (reach * 3)) * BODY_SHIFT, y: clamp(dy / (reach * 3)) * BODY_SHIFT };
   }
   window.addEventListener('pointermove', e => onPointer(e.clientX, e.clientY), { passive: true });
   document.addEventListener('pointerleave', () => { lookTarget = { x: 0, y: 0 }; });
