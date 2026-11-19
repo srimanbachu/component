@@ -22,6 +22,11 @@
   };
   const KEYS = Object.keys(STATES.open);
 
+  // Pressed variant pushed further from Open: used when a press starts recording
+  const lerpState = (a, b, t) => Object.fromEntries(KEYS.map(k => [k, a[k] + (b[k] - a[k]) * t]));
+  STATES.pressedDeep = lerpState(STATES.open, STATES.pressed, 1.6);
+  STATES.pressedDeep.eh = STATES.pressed.eh;   // eyes stay closed lines, never negative
+
   const wrap = document.getElementById('orbWrap');
   const group = document.getElementById('birdGroup');
   const body = document.getElementById('birdBody');
@@ -101,12 +106,13 @@
   }
 
   /* ---------- press → rebound → open (Eyes=Pressed / Rebound) ---------- */
-  function press() {
+  // deep = this press is starting a recording -> squeeze harder
+  function press({ deep = false } = {}) {
     clearTimeout(reboundTimer);
-    shape = 'pressed';
+    shape = deep ? 'pressedDeep' : 'pressed';
   }
   function release() {
-    if (shape !== 'pressed') return;
+    if (shape !== 'pressed' && shape !== 'pressedDeep') return;
     shape = 'rebound';
     clearTimeout(reboundTimer);
     reboundTimer = setTimeout(() => { shape = 'open'; }, 160);
