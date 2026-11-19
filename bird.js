@@ -130,11 +130,12 @@
       }
     }
     if (shape === 'open' && !blinking) {
-      // listening: the bird "breathes" with your voice, borrowing the rebound stretch
-      base.ry += level * 18;
-      base.rx -= level * 7;
-      base.dy -= level * 9;
-      base.eh += level * 22;
+      // speaking: the bird stretches up with your voice (rebound-style), eyes widen
+      base.ry += level * 42;
+      base.rx -= level * 16;
+      base.dy -= level * 24;
+      base.eh += level * 46;
+      base.ew += level * 6;
     }
     // squash & stretch along the cursor's motion (cartoon follow-through)
     const sx = Math.min(1, Math.abs(cursorVel.x) / 1800);
