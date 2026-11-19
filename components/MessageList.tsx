@@ -1,7 +1,6 @@
 'use client';
 
 import { useLayoutEffect, useRef } from 'react';
-
 import type { IntentResult } from '@/lib/intent/intents';
 
 export type Message = { id: number; text: string; via: 'typed' | 'voice'; intent?: IntentResult };
